@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <complex.h>
 #include <fftw3.h>
+#include <assert.h>
 #include "quantfdtd.h"
 
 /**
@@ -50,10 +51,11 @@ void pot_harmonic(double **V, int N, int M, int NC, int MC, double k0, double de
  Science, 282, 181, (1993)
  */
 void pot_corral(double **V, int N, int M, int NC, int MC, double radius, double V0, double DX){
+	radius /=DX;
 	for( int i = 0; i < N; i++) {
 		for ( int j = 0; j < M; j++) {
-			if (((NC-i)*(NC-i)+(MC-j)*(MC-j))*DX > radius*radius )
-				V[i][j] = V0;
+			if ( ((NC-i)*(NC-i)+(MC-j)*(MC-j)) > (radius*radius) )
+				V[i][j] = V0*1.6e-19;
 		}
 	}
 }
@@ -69,6 +71,7 @@ int pnpoly(int nvert, float *vertx, float *verty, float testx, float testy) {
 	}
 	return c;
 }
+
 /**
 Reads input from the file descriptor.
 
@@ -95,6 +98,8 @@ int readinput(input_data_s *inppar, FILE *input){
 	fscanf(inpd,"%i", &(inppar->potential));
 	printf("# Number of timesteps (int):?");
 	fscanf(inpd,"%i", &(inppar->n_step));
+	printf("# Eigenenergy (double):?");
+	fscanf(inpd,"%lf", &(inppar->Ein));
 	return 0;
 }
 
@@ -119,11 +124,12 @@ int test_function( int N, int M, int NC, int MC, double **win2D, double **prl ) 
 			
 			// Single point
 			dist = sqrt((NC-i)*(NC-i) + (MC-j)*(MC-j));
-			prl[i][j]  = win2D[i][j] * exp(-(dist/sigma)*(dist/sigma));
+			//prl[i][j]  = win2D[i][j] * exp(-(dist/sigma)*(dist/sigma));
 			
 			// Double point
-			dist1 = sqrt( (MC-j)*(MC-j) + (NC+10-i)*(NC-10-i) );
-			dist2 = sqrt( (MC-j)*(MC-j) + (NC-10-i)*(NC-10-i) );								
+			dist1 = sqrt( (MC-j)*(MC-j) + (NC+10-i)*(NC+10-i) );
+			dist2 = sqrt( (MC-j)*(MC-j) + (NC-10-i)*(NC-10-i) );
+			prl[i][j] =( exp(-(dist1/sigma)*(dist1/sigma))-exp(-(dist2/sigma)*(dist2/sigma)));								
 		}
 	}
 	return 0;
@@ -184,7 +190,7 @@ double normalization( int N, int M, double **prl, double **pim ) {
   \param **V    potential for the particle 
   \param n_step  number of timestep to calculate.
  */
-int calculate_FDTD( int N, int M, int nsource, int msource, input_data_s *pars, fft_parameters_s *fft_pars, 
+int calculate_FDTD( int N, int M, int nsource, int msource, input_data_s *pars, fft_parameters_s *fft_pars, eigenfunction_s *eigen,
   	double **prl, double **pim, double **V, int n_step ){
 	
 	int t, i, j;
@@ -192,7 +198,7 @@ int calculate_FDTD( int N, int M, int nsource, int msource, input_data_s *pars, 
 	dt = pars->dt;
 	hbar = pars->hbar;
 	ra = (0.5*hbar/pars->melec)*(dt/(pow(pars->del_x,2))); // ra must be < .1
-		
+	printf("# Value of Ra constant: %g\n", ra);	
 	// ------ This is the core FDTD program ---------------
 	for (t=1; t < n_step; t++) {
     	//first real part
@@ -212,6 +218,16 @@ int calculate_FDTD( int N, int M, int nsource, int msource, input_data_s *pars, 
 		}
 		
     	fft_pars->Ptime[t] = prl[msource][nsource]-I*pim[msource][nsource];
+		
+		if (!isnan(pars->Ein)){
+		    for (i = 1; i < N-1; i++) {
+		        for (j = 1; j < M-1; j++) {
+		            eigen->psi[i][j]  = prl[i][j] + I*pim[i][j];
+		            eigen->phi[i][j] += fft_pars->win[t]* exp(I*eigen->arg*t)*(eigen->psi[i][j]);
+					//printf("win: %g\n", fft_pars->win[t]);
+				}
+			}
+		}
 	}
 	return t;
 }
@@ -228,6 +244,10 @@ int create_Hanning(fft_parameters_s *pars, int n_step) {
 		pars->win[n] = 0.5*(1.0-cos(2*M_PI*n/n_step));
 		pars->Pwin[n] = pars->win[n] * pars->Ptime[n];
 	}
+	
+	FILE *fw = fopen("test_win","w");
+	for (int n = 0; n < n_step; n++)
+		fprintf(fw, "%i %g \n", n, creal(pars->win[n]));
 	return 0;
 }
 /**
@@ -239,7 +259,6 @@ int create_Hanning(fft_parameters_s *pars, int n_step) {
 int take_fft(fft_parameters_s *pars, int n_step) {
 	//fftw_complex *in, *out;
 	fftw_plan plan;
-	complex double out[Ntime];
 	
 	//in = (fftw_complex*) fft_malloc(sizeof(fftw_complex) * pars->Ntime);
 	//out = (fftw_complex*) fft_malloc(sizeof(fftw_complex) * pars->Ntime);
@@ -249,13 +268,7 @@ int take_fft(fft_parameters_s *pars, int n_step) {
 
 	fftw_destroy_plan(plan);
 	
-	plan = fftw_plan_dft_1d(Ntime, pars->PF, &out, FFTW_BACKWARD, FFTW_ESTIMATE);
-	fftw_execute(plan);
-	FILE *ftest = fopen("test_fft", "w");
-	for(int i = 0; i < n_step; i++)
-		fprintf(ftest,"%g \n", out[i]/Ntime);
 	
-	fftw_destroy_plan(plan);
 	//fftw_free(in);
 	//fftw_free(out); 
 	return 0;
@@ -277,6 +290,18 @@ int initialize_calculation(input_data_s *pars, fft_parameters_s *fft_pars){
 		
 	return 0;
 }
+/**
+ This function writes results to a file used by gnuplot to plot the data.
+ 
+ \param output file descriptor if set \c NULL then write to the stdout.
+ \param N  number of cells in x direc.
+ \param M  number of cells in y direc.
+ \param *x coordinates to write out in x direc.
+ \param *y coordinates to write out in y direc.
+ \param **prl  real part of the wavefunction or eigenfunction.
+ \param **pim  imag part of the wavefunction or eigenfunction.
+ \param **V    potential used for calculation.
+ */
 int plot_data(FILE *output, int N, int M, double *x, double *y, double **prl, double **pim, double **V){
 	FILE *fd = output ? output : stdout;
 	for (int i=0; i < N; i++){
@@ -285,7 +310,13 @@ int plot_data(FILE *output, int N, int M, double *x, double *y, double **prl, do
 		}
 		fprintf(fd,"\n");
 	}
-	
+	//fprintf(fd,"\n\n");
+	for (int i=0; i < N; i++){
+		for (int j = 0; j < M; j++){
+			//fprintf(fd, "%g %g %g\n", x[i], y[j], V[i][j]);
+		}
+		//fprintf(fd,"\n");
+	}
 	return 0;
 }
 
@@ -302,9 +333,15 @@ int plot_fft(FILE *output, fft_parameters_s *fft_pars, int n_step) {
 	return 0;
 }
 
+/**
+ Allocate memory for the matrix 2d array.
+ \param int sizeX size of the matrix in x 
+ \param int sizeY size of the matrix in y
+ \return returns allocate memory
+ */
 double **matrix(int sizeX, int sizeY){
 	double **m;
-	printf("Allocating matrix of size: (%i,%i)\n", sizeX, sizeY);
+	printf("#Allocating matrix of size: (%i,%i)\n", sizeX, sizeY);
 	m = (double **)malloc(sizeof(double*)*sizeY);
 	m[0] = (double*)malloc(sizeof(double)*sizeY*sizeX);
 	if (m == NULL) 
@@ -315,31 +352,178 @@ double **matrix(int sizeX, int sizeY){
 	
 	return m;
 }
-
+/**
+ Allocate memory for the matrix 2d array of complex numbers.
+ \param int sizeX size of the matrix in x 
+ \param int sizeY size of the matrix in y
+ \return returns allocated memory
+*/
+complex double **cmatrix(int sizeX, int sizeY){
+	complex double **m;
+	printf("#Allocating matrix of size: (%i,%i)\n", sizeX, sizeY);
+	m = (complex double **)malloc(sizeof(complex double*)*sizeY);
+	m[0] = (complex double*)malloc(sizeof(complex double)*sizeY*sizeX);
+	if (m == NULL) 
+		fprintf(stderr, "Problem with allocation of memory for matrix\n");
+	if (m[0] == NULL)
+		fprintf(stderr, "Can't allocate enough memory for matrix\n");
+	for (int i = 1; i < sizeY; i++) m[i] = m[i-1]+sizeX; 
+	
+	return m;
+}
+/**
+ Free previous memory allocated by \c matrix.
+ \param double **m is matrix to be freed.
+ \param int sizeX size of the matrix in X direction 
+ \param int sizeY size of the matrix in Y direction
+ */
 void free_matrix(double **m, int sizeX, int sizeY){
-	for(int i = 0; i < sizeY; i++)
-		free(m[i]);
+	free(m[0]);
 	free(m);
 }	
+/**
+ Free previous memory allocated by \c cmatrix.
+ \param double **m is matrix to be freed.
+ \param int sizeX size of the matrix in X direction 
+ \param int sizeY size of the matrix in Y direction
+ */
+void free_cmatrix(complex double **m, int sizeX, int sizeY){
+	free(m[0]);
+	free(m);
+}
 
-int allocate_memory(input_data_s *pars, double ***prl, double ***pim, double ***V, double ***win2D){
+int allocate_memory(input_data_s *pars, eigenfunction_s *eigen, double ***prl, double ***pim, double ***V, double ***win2D){
 	pars->XX = (double *)malloc(sizeof(double)*pars->NN);
 	// allocating 2D arrays
 	*prl = matrix(pars->NN,pars->MM);
 	*pim = matrix(pars->NN,pars->MM);
 	*V   = matrix(pars->NN,pars->MM);
 	*win2D = matrix(pars->NN,pars->MM);
+	if (!isnan(pars->Ein)) {
+		eigen->psi = cmatrix(pars->NN,pars->MM);
+		eigen->phi = cmatrix(pars->NN,pars->MM);
+		eigen->phi_m = matrix(pars->NN,pars->MM);
+		eigen->angle = matrix(pars->NN,pars->MM);
+		eigen->phi0_rl = matrix(pars->NN,pars->MM);
+	}
 	return 0;
 }
-
-int deallocate_memory(input_data_s *pars, double **prl, double **pim, double **V, double **win2D){
+/**
+ Deallocate memory previously allocated by allocate function.
+ */
+int deallocate_memory(input_data_s *pars, eigenfunction_s *eigen, double **prl, double **pim, double **V, double **win2D){
 	free(pars->XX);
 	free_matrix(prl,pars->NN,pars->MM);
 	free_matrix(pim,pars->NN,pars->MM);
 	free_matrix(V,pars->NN,pars->MM);
 	free_matrix(win2D,pars->NN,pars->MM);
-	
+	if (!isnan(pars->Ein)) {
+		free_cmatrix(eigen->psi,pars->NN,pars->MM);
+		free_cmatrix(eigen->phi,pars->NN,pars->MM);
+		free_matrix(eigen->phi_m,pars->NN,pars->MM);
+		free_matrix(eigen->angle,pars->NN,pars->MM);
+		free_matrix(eigen->phi0_rl,pars->NN,pars->MM);
+	}
 	return 0;
+}
+/**
+ Intialize the parameters like frequency, period -- for calculating eigenfunction
+ of the Schrodinger equation.
+ \param input_data_s *pars represents input data (eigenenergy, physical constants).
+ \param eigenfunction_s *eigen eigenfunction parameters.
+ */
+int eigenfunction(input_data_s *pars, eigenfunction_s *eigen) {
+	if ( !isnan(pars->Ein) ) {
+		eigen->freq = pars->Ein/(pars->J2eV*2*M_PI*pars->hbar);
+		eigen->omega = 2*M_PI*eigen->freq;
+		eigen->arg = eigen->omega * pars->dt;
+		eigen->T_period = 1/(eigen->freq * pars->dt);
+		printf("#freq: %g, omega: %g, arg: %g, T_period = %g\n", eigen->freq, eigen->omega,
+			eigen->arg, eigen->T_period);
+	}
+	return 0;
+}
+/**
+ Finds eigenfunction of the problem.
+ 
+ \param int NC  x position of the source  
+ \param int MC  y position of the source 
+ \param input_data_s contains input data parameters (geometry) 
+ \param eigenfunction_s *eigen eigenfunction parameters
+ */
+int find_eigenfunction(int NC, int MC, input_data_s *pars, eigenfunction_s *eigen){
+	complex double ptot_phi = 0 + I*0;
+	// shorthand writing
+	complex double **phi = eigen->phi;
+	double **phi_m = eigen->phi_m;
+	double **angle = eigen->angle;
+	double **phi0_rl = eigen->phi0_rl;
+	
+	for (int i = 0; i < pars->NN; i++) {
+		for (int j = 0; j < pars->MM; j++) {
+			ptot_phi += phi[i][j]*conj(phi[i][j]);   //complex conjugate
+		}
+	}
+	//printf("Ptot_phi:%g + I%g\n", creal(ptot_phi),cimag(ptot_phi));
+	for (int i = 0; i < pars->NN; i++) {
+		for (int j = 0; j < pars->MM; j++) {
+			phi_m[i][j] = phi[i][j] / ptot_phi;
+			//printf("phi_m: %g \n", phi_m[i][j]);
+			assert(!isnan(phi_m[i][j]));
+			angle[i][j] = atan2(cimag(phi[i][j]),creal(phi[i][j]));
+			//printf("i: %i, j: %i\n",i,j);
+			//printf("phi: %g + I%g, angle: %g\n", creal(phi[i][j]),cimag(phi[i][j]), angle[i][j]);
+			assert(!isnan(angle[i][j]));
+		}
+	}
+	
+	FILE *fdtest = fopen("test_phi1_m", "w");
+	for (int i = 0; i < pars->NN; i++){
+		for (int j = 0; j < pars->MM; j++){
+			fprintf(fdtest, "%i %i %g\n", i,j, creal(phi_m[i][j]));
+		}
+		fprintf(fdtest,"\n");
+	}
+	fprintf(fdtest, "\n\n");
+	for (int i = 0; i < pars->NN; i++){
+		for (int j = 0; j < pars->MM; j++){
+			fprintf(fdtest, "%i %i %g\n", i,j, cimag(phi_m[i][j]));
+		}
+		fprintf(fdtest,"\n");
+	}
+	fclose(fdtest);
+	
+	double ang0 = angle[MC][NC];      // The angle at the source point
+	//double ang0 = 0.0;
+	printf("#ang0: %g\n", ang0);
+	double ptot0 = 0.;
+	for (int i = 0; i < pars->NN; i++) {
+		for (int j = 0; j < pars->MM; j++) {	
+			angle[i][j] = angle[i][j] - ang0;
+			assert(!isnan(angle[i][j]));
+			//printf("abs(phi): %g, cos(angle): %g\n", fabs(phi_m[i][j]),cos(angle[i][j]));
+			phi0_rl[i][j] = fabs(phi_m[i][j])*cos(angle[i][j]);
+			assert(!isnan(phi0_rl[i][j]));
+			//printf("phi0_rl: %g\n", phi0_rl[i][j]);
+			ptot0 += phi0_rl[i][j]*phi0_rl[i][j];
+		}
+	}
+	//printf("Ptot: %g\n", ptot0);
+	double nptot0 = sqrt(ptot0);
+
+	for (int i = 0; i < pars->NN; i++) {
+		for (int j = 0; j < pars->MM; j++) {	
+			phi0_rl[i][j] = phi0_rl[i][j] / nptot0;
+		}
+	}
+	return 0;
+}
+/**
+ Calculates critical timestep 
+ \return critical time-step in sec.
+ */
+double critical_dt(input_data_s *pars, double Vmax){
+	return pars->hbar/(pow(pars->hbar,2)/pars->melec *(2.0/pars->del_x)+Vmax);
 }
 
 int main(int argc, char **argv) {
@@ -350,7 +534,8 @@ int main(int argc, char **argv) {
 		.J2eV = 1/1.6e-19};
 
 	fft_parameters_s fft_pars; /* FFT data and parameters */
-	double k0=0, V0=0, radius=0;
+	eigenfunction_s  eigen;    /* eigenfunction parameters and data */
+	double k0=0, V0=0.3, radius=14.26/2;
 	double **prl = NULL, **pim = NULL, **V = NULL, **win2D = NULL;  /* real and imag part of the wavefunction, potential*/	
 	FILE *file = NULL;
 	
@@ -365,14 +550,19 @@ int main(int argc, char **argv) {
 	readinput(&inppars, file);
 	
 	// allocate memory
-	allocate_memory(&inppars,&prl,&pim,&V,&win2D);
+	allocate_memory(&inppars,&eigen,&prl,&pim,&V,&win2D);
 	initialize_calculation(&inppars, &fft_pars);
-	printf("Mass of electron: %g\n",inppars.melec);
+	eigenfunction(&inppars,&eigen);
+	printf("#Mass of electron: %g\n",inppars.melec);
+	printf("#Critical timestep: %g\n", critical_dt(&inppars,V0*inppars.eV2J));
+	printf("#Timesteps: %i\n",inppars.n_step);
+	printf("#Eigenenergy: %g\n",inppars.Ein);
 	int N = inppars.NN;
 	int M = inppars.MM;
 	int n_step = inppars.n_step;
-	printf("n_steps: %i", inppars.n_step);
+	printf("#n_steps: %i", inppars.n_step);
 	//printf("I got here\n");
+	
 	// Specify the potentials
 	switch(inppars.potential) {
 		case 1:
@@ -388,31 +578,43 @@ int main(int argc, char **argv) {
 		pot_harmonic(V, N, M, N/2, M/2, k0, pow(inppars.del_x,2));
 		break;
 		case 5:
-		pot_corral(V, N, M, N/2, M/2, radius, V0, inppars.DX);
+		pot_corral(V, N, M, N/2, M/2, radius, V0, inppars.del_x * inppars.DX);
 		break;
 		default:
 		printf("Unrecognized potential type: %i\n",inppars.potential);
 		break;
 	}
-	//printf("I got here");
 	// Test function
 	test_function( N, M, N/2, M/2, win2D, prl );
+	
 	// Normalize and check 
 	normalization( N, M, prl, pim );	
+	
+	if (!isnan(inppars.Ein)) 
+		create_Hanning(&fft_pars, n_step);
+	
 	// Core of FDTD 
-	calculate_FDTD( N, M, N/2, M/2-10, &inppars, &fft_pars, prl, pim, V, n_step );
+	calculate_FDTD( N, M, N/2-10, M/2-10, &inppars, &fft_pars, &eigen, prl, pim, V, n_step );
+	
 	// Check normalization
 	double normalize = check_normalization(N, M, prl, pim);
 	printf("Normalization constant after %i steps: %g\n", n_step, normalize);
-	// Plot the time domain data and FFT.
-	plot_data(NULL, N, M, inppars.XX, inppars.XX, prl, pim, V);
-	// Create the Hanning window for the time-domain data
-	create_Hanning(&fft_pars, n_step);
-	// Take the FFT of the windowed time-domain data 
-	take_fft(&fft_pars, n_step);
-	// Plot the time-domain data together with the FFT.
-	FILE *fdtd = fopen("timedomain","w");
-	plot_fft(fdtd, &fft_pars, n_step);
-	//deallocate_memory(&inppars,prl,pim,V,win2D);
+	
+	if (!isnan(inppars.Ein)) {
+		find_eigenfunction(N/2, M/2, &inppars, &eigen);
+		plot_data(NULL, N, M, inppars.XX, inppars.XX, eigen.phi0_rl, NULL, NULL);	
+	} else {
+		// Plot the time domain data and FFT.
+		plot_data(NULL, N, M, inppars.XX, inppars.XX, prl, pim, V);
+	
+		// Create the Hanning window for the time-domain data
+		create_Hanning(&fft_pars, n_step);
+		// Take the FFT of the windowed time-domain data 
+		take_fft(&fft_pars, n_step);
+		// Plot the time-domain data together with the FFT.
+		FILE *fdtd = fopen("timedomain","w");
+		plot_fft(fdtd, &fft_pars, n_step);
+	}
+	deallocate_memory(&inppars,&eigen,prl,pim,V,win2D);
 	return 0;
 }
