@@ -4,5 +4,5 @@ set ylabel "Psi real"
 plot "timedomain" index 0 w l
 set xlabel "E (meV)"
 set ylabel "FFT (Psi)"
-set xrange[0:50]
+set xrange[0:450]
 plot "timedomain" index 1 w l 

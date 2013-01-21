@@ -1,0 +1,455 @@
+\hypertarget{quantfdtd_8c}{\section{quantfdtd.\-c File Reference}
+\label{quantfdtd_8c}\index{quantfdtd.\-c@{quantfdtd.\-c}}
+}
+{\ttfamily \#include $<$stdio.\-h$>$}\\*
+{\ttfamily \#include $<$math.\-h$>$}\\*
+{\ttfamily \#include $<$stdlib.\-h$>$}\\*
+{\ttfamily \#include $<$complex.\-h$>$}\\*
+{\ttfamily \#include $<$fftw3.\-h$>$}\\*
+{\ttfamily \#include $<$assert.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}quantfdtd.\-h\char`\"{}}\\*
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{quantfdtd_8c_ab6d9936b7eabd54846efd73e9fd1b1bb}{pot\-\_\-free} (double $\ast$$\ast$V, int N, int M)
+\item 
+\hypertarget{quantfdtd_8c_a4096d7a9921e3ca3d4515607b31f0ea6}{void {\bfseries pot\-\_\-step} (double $\ast$$\ast$V, int N, int M)}\label{quantfdtd_8c_a4096d7a9921e3ca3d4515607b31f0ea6}
+
+\item 
+\hypertarget{quantfdtd_8c_adc44de10fb102b77fcef6592f913d928}{void {\bfseries pot\-\_\-slanted} (double $\ast$$\ast$V, int N, int M)}\label{quantfdtd_8c_adc44de10fb102b77fcef6592f913d928}
+
+\item 
+void \hyperlink{quantfdtd_8c_aaaa1b4c4347dd0ab1100511f998567e2}{pot\-\_\-harmonic} (double $\ast$$\ast$V, int N, int M, int N\-C, int M\-C, double k0, double del\-X2)
+\item 
+void \hyperlink{quantfdtd_8c_a35de3726f53c82f16abbc874574ea88d}{pot\-\_\-corral} (double $\ast$$\ast$V, int N, int M, int N\-C, int M\-C, double radius, double V0, double D\-X)
+\item 
+\hypertarget{quantfdtd_8c_ab841898f3c2e0989949ed8299dbfaf81}{int {\bfseries pnpoly} (int nvert, float $\ast$vertx, float $\ast$verty, float testx, float testy)}\label{quantfdtd_8c_ab841898f3c2e0989949ed8299dbfaf81}
+
+\item 
+int \hyperlink{quantfdtd_8c_a7ee51cf2e4dfa8e6f8cec73dc0b5a665}{readinput} (\hyperlink{structinput__data__s}{input\-\_\-data\-\_\-s} $\ast$inppar, F\-I\-L\-E $\ast$input)
+\item 
+int \hyperlink{quantfdtd_8c_a2fbc6dbffab61d426ccf70c3760cfee1}{test\-\_\-function} (int N, int M, int N\-C, int M\-C, double $\ast$$\ast$win2\-D, double $\ast$$\ast$prl)
+\item 
+double \hyperlink{quantfdtd_8c_aac839cdf7aab8be1d404dda064d52551}{check\-\_\-normalization} (int N, int M, double $\ast$$\ast$prl, double $\ast$$\ast$pim)
+\item 
+double \hyperlink{quantfdtd_8c_a0b47b404a5e0160bc54ca8d3af0393e1}{normalization} (int N, int M, double $\ast$$\ast$prl, double $\ast$$\ast$pim)
+\item 
+int \hyperlink{quantfdtd_8c_ae85e2e3f31bf0f38749142f66c1f7f18}{calculate\-\_\-\-F\-D\-T\-D} (int N, int M, int nsource, int msource, \hyperlink{structinput__data__s}{input\-\_\-data\-\_\-s} $\ast$pars, \hyperlink{structfft__parameters__s}{fft\-\_\-parameters\-\_\-s} $\ast$fft\-\_\-pars, \hyperlink{structeigenfunction__s}{eigenfunction\-\_\-s} $\ast$eigen, double $\ast$$\ast$prl, double $\ast$$\ast$pim, double $\ast$$\ast$V, int n\-\_\-step)
+\item 
+int \hyperlink{quantfdtd_8c_ad663f1137d54b7e40a5a29b90332a75e}{create\-\_\-\-Hanning} (\hyperlink{structfft__parameters__s}{fft\-\_\-parameters\-\_\-s} $\ast$pars, int n\-\_\-step)
+\item 
+int \hyperlink{quantfdtd_8c_a5cb9dea6e6839ee3b960762cefd05e89}{take\-\_\-fft} (\hyperlink{structfft__parameters__s}{fft\-\_\-parameters\-\_\-s} $\ast$pars, int n\-\_\-step)
+\item 
+\hypertarget{quantfdtd_8c_a0dbc9564ea8dd15a6b6e08485ef57018}{int {\bfseries initialize\-\_\-calculation} (\hyperlink{structinput__data__s}{input\-\_\-data\-\_\-s} $\ast$pars, \hyperlink{structfft__parameters__s}{fft\-\_\-parameters\-\_\-s} $\ast$fft\-\_\-pars)}\label{quantfdtd_8c_a0dbc9564ea8dd15a6b6e08485ef57018}
+
+\item 
+int \hyperlink{quantfdtd_8c_a9f2e54ee23d475e54ad684881e521190}{plot\-\_\-data} (F\-I\-L\-E $\ast$output, int N, int M, double $\ast$x, double $\ast$y, double $\ast$$\ast$prl, double $\ast$$\ast$pim, double $\ast$$\ast$V)
+\item 
+\hypertarget{quantfdtd_8c_a11299bb6bbe8d24f388f8f05e73a8789}{int {\bfseries plot\-\_\-fft} (F\-I\-L\-E $\ast$output, \hyperlink{structfft__parameters__s}{fft\-\_\-parameters\-\_\-s} $\ast$fft\-\_\-pars, int n\-\_\-step)}\label{quantfdtd_8c_a11299bb6bbe8d24f388f8f05e73a8789}
+
+\item 
+double $\ast$$\ast$ \hyperlink{quantfdtd_8c_a4d369e283be53a261d460fd185b0cc5c}{matrix} (int size\-X, int size\-Y)
+\item 
+complex double $\ast$$\ast$ \hyperlink{quantfdtd_8c_a5c1f2d37dbeffa4ab45a1e136e26fb1f}{cmatrix} (int size\-X, int size\-Y)
+\item 
+void \hyperlink{quantfdtd_8c_aed80427379503bf798b13465db99095c}{free\-\_\-matrix} (double $\ast$$\ast$m, int size\-X, int size\-Y)
+\item 
+void \hyperlink{quantfdtd_8c_a120e5edd058c9c03b3055edae673e83b}{free\-\_\-cmatrix} (complex double $\ast$$\ast$m, int size\-X, int size\-Y)
+\item 
+\hypertarget{quantfdtd_8c_a9a29773e63f01cc83c7125a7d270ab2b}{int {\bfseries allocate\-\_\-memory} (\hyperlink{structinput__data__s}{input\-\_\-data\-\_\-s} $\ast$pars, \hyperlink{structeigenfunction__s}{eigenfunction\-\_\-s} $\ast$eigen, double $\ast$$\ast$$\ast$prl, double $\ast$$\ast$$\ast$pim, double $\ast$$\ast$$\ast$V, double $\ast$$\ast$$\ast$win2\-D)}\label{quantfdtd_8c_a9a29773e63f01cc83c7125a7d270ab2b}
+
+\item 
+int \hyperlink{quantfdtd_8c_ab355c0187bf7a23aa1b926bef2209dcc}{deallocate\-\_\-memory} (\hyperlink{structinput__data__s}{input\-\_\-data\-\_\-s} $\ast$pars, \hyperlink{structeigenfunction__s}{eigenfunction\-\_\-s} $\ast$eigen, double $\ast$$\ast$prl, double $\ast$$\ast$pim, double $\ast$$\ast$V, double $\ast$$\ast$win2\-D)
+\item 
+int \hyperlink{quantfdtd_8c_a3ebe420f3e851660eadf0e54497537f0}{eigenfunction} (\hyperlink{structinput__data__s}{input\-\_\-data\-\_\-s} $\ast$pars, \hyperlink{structeigenfunction__s}{eigenfunction\-\_\-s} $\ast$eigen)
+\item 
+int \hyperlink{quantfdtd_8c_a62596a94f181e391e80e0e82a81e0f00}{find\-\_\-eigenfunction} (int N\-C, int M\-C, \hyperlink{structinput__data__s}{input\-\_\-data\-\_\-s} $\ast$pars, \hyperlink{structeigenfunction__s}{eigenfunction\-\_\-s} $\ast$eigen)
+\item 
+double \hyperlink{quantfdtd_8c_a577b0fe2b745b2c252e5c307996108b6}{critical\-\_\-dt} (\hyperlink{structinput__data__s}{input\-\_\-data\-\_\-s} $\ast$pars, double Vmax)
+\item 
+\hypertarget{quantfdtd_8c_a3c04138a5bfe5d72780bb7e82a18e627}{int {\bfseries main} (int argc, char $\ast$$\ast$argv)}\label{quantfdtd_8c_a3c04138a5bfe5d72780bb7e82a18e627}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+This program calculates eigenenergies and eigenfunctions of the nanoscale Q\-D on the surface.
+
+Author\-: T.\-Ivas Date \-: 08.\-02.\-13 
+
+\subsection{Function Documentation}
+\hypertarget{quantfdtd_8c_ae85e2e3f31bf0f38749142f66c1f7f18}{\index{quantfdtd.\-c@{quantfdtd.\-c}!calculate\-\_\-\-F\-D\-T\-D@{calculate\-\_\-\-F\-D\-T\-D}}
+\index{calculate\-\_\-\-F\-D\-T\-D@{calculate\-\_\-\-F\-D\-T\-D}!quantfdtd.c@{quantfdtd.\-c}}
+\subsubsection[{calculate\-\_\-\-F\-D\-T\-D}]{\setlength{\rightskip}{0pt plus 5cm}int calculate\-\_\-\-F\-D\-T\-D (
+\begin{DoxyParamCaption}
+\item[{int}]{N, }
+\item[{int}]{M, }
+\item[{int}]{nsource, }
+\item[{int}]{msource, }
+\item[{{\bf input\-\_\-data\-\_\-s} $\ast$}]{pars, }
+\item[{{\bf fft\-\_\-parameters\-\_\-s} $\ast$}]{fft\-\_\-pars, }
+\item[{{\bf eigenfunction\-\_\-s} $\ast$}]{eigen, }
+\item[{double $\ast$$\ast$}]{prl, }
+\item[{double $\ast$$\ast$}]{pim, }
+\item[{double $\ast$$\ast$}]{V, }
+\item[{int}]{n\-\_\-step}
+\end{DoxyParamCaption}
+)}}\label{quantfdtd_8c_ae85e2e3f31bf0f38749142f66c1f7f18}
+This is the core of the program it calculates the time step for Schrodinger equation using forward stepping.
+
+
+\begin{DoxyParams}{Parameters}
+{\em N} & number of discrete cells in X direction. \\
+\hline
+{\em M} & number of discrete cells in Y direction. \\
+\hline
+{\em nsource} & x point where to collect time-\/domain data. \\
+\hline
+{\em msource} & y point where to collect time-\/domain data. \\
+\hline
+{\em \hyperlink{structinput__data__s}{input\-\_\-data\-\_\-s}} & structure containing all parameters data for calculations. \\
+\hline
+{\em $\ast$$\ast$prl} & real part of the wavefunction. \\
+\hline
+{\em $\ast$$\ast$pim} & imaginary part of the wavefunction. \\
+\hline
+{\em $\ast$$\ast$\-V} & potential for the particle \\
+\hline
+{\em n\-\_\-step} & number of timestep to calculate. \\
+\hline
+\end{DoxyParams}
+\hypertarget{quantfdtd_8c_aac839cdf7aab8be1d404dda064d52551}{\index{quantfdtd.\-c@{quantfdtd.\-c}!check\-\_\-normalization@{check\-\_\-normalization}}
+\index{check\-\_\-normalization@{check\-\_\-normalization}!quantfdtd.c@{quantfdtd.\-c}}
+\subsubsection[{check\-\_\-normalization}]{\setlength{\rightskip}{0pt plus 5cm}double check\-\_\-normalization (
+\begin{DoxyParamCaption}
+\item[{int}]{N, }
+\item[{int}]{M, }
+\item[{double $\ast$$\ast$}]{prl, }
+\item[{double $\ast$$\ast$}]{pim}
+\end{DoxyParamCaption}
+)}}\label{quantfdtd_8c_aac839cdf7aab8be1d404dda064d52551}
+Calculate the total sum of wavefunctions which are used to normalize the probability.
+
+
+\begin{DoxyParams}{Parameters}
+{\em N} & number of discrete cells in X direction. \\
+\hline
+{\em M} & number of discrete cells in Y direction. \\
+\hline
+{\em double} & $\ast$$\ast$ prl real part of the wavefunction. \\
+\hline
+{\em double} & $\ast$$\ast$ pim imaginary part of the wavefunction.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+sum of the wavefunction over the whole space. 
+\end{DoxyReturn}
+\hypertarget{quantfdtd_8c_a5c1f2d37dbeffa4ab45a1e136e26fb1f}{\index{quantfdtd.\-c@{quantfdtd.\-c}!cmatrix@{cmatrix}}
+\index{cmatrix@{cmatrix}!quantfdtd.c@{quantfdtd.\-c}}
+\subsubsection[{cmatrix}]{\setlength{\rightskip}{0pt plus 5cm}complex double$\ast$$\ast$ cmatrix (
+\begin{DoxyParamCaption}
+\item[{int}]{size\-X, }
+\item[{int}]{size\-Y}
+\end{DoxyParamCaption}
+)}}\label{quantfdtd_8c_a5c1f2d37dbeffa4ab45a1e136e26fb1f}
+Allocate memory for the matrix 2d array of complex numbers. 
+\begin{DoxyParams}{Parameters}
+{\em int} & size\-X size of the matrix in x \\
+\hline
+{\em int} & size\-Y size of the matrix in y \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+returns allocated memory 
+\end{DoxyReturn}
+\hypertarget{quantfdtd_8c_ad663f1137d54b7e40a5a29b90332a75e}{\index{quantfdtd.\-c@{quantfdtd.\-c}!create\-\_\-\-Hanning@{create\-\_\-\-Hanning}}
+\index{create\-\_\-\-Hanning@{create\-\_\-\-Hanning}!quantfdtd.c@{quantfdtd.\-c}}
+\subsubsection[{create\-\_\-\-Hanning}]{\setlength{\rightskip}{0pt plus 5cm}int create\-\_\-\-Hanning (
+\begin{DoxyParamCaption}
+\item[{{\bf fft\-\_\-parameters\-\_\-s} $\ast$}]{pars, }
+\item[{int}]{n\-\_\-step}
+\end{DoxyParamCaption}
+)}}\label{quantfdtd_8c_ad663f1137d54b7e40a5a29b90332a75e}
+Creates Hanning window to smooth the F\-F\-T data.
+
+
+\begin{DoxyParams}{Parameters}
+{\em fft\-\_\-parameters} & parameters which are used for F\-F\-T. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+corrected array Pwin which represents corrected time-\/domain data 
+\end{DoxyReturn}
+\hypertarget{quantfdtd_8c_a577b0fe2b745b2c252e5c307996108b6}{\index{quantfdtd.\-c@{quantfdtd.\-c}!critical\-\_\-dt@{critical\-\_\-dt}}
+\index{critical\-\_\-dt@{critical\-\_\-dt}!quantfdtd.c@{quantfdtd.\-c}}
+\subsubsection[{critical\-\_\-dt}]{\setlength{\rightskip}{0pt plus 5cm}double critical\-\_\-dt (
+\begin{DoxyParamCaption}
+\item[{{\bf input\-\_\-data\-\_\-s} $\ast$}]{pars, }
+\item[{double}]{Vmax}
+\end{DoxyParamCaption}
+)}}\label{quantfdtd_8c_a577b0fe2b745b2c252e5c307996108b6}
+Calculates critical timestep \begin{DoxyReturn}{Returns}
+critical time-\/step in sec. 
+\end{DoxyReturn}
+\hypertarget{quantfdtd_8c_ab355c0187bf7a23aa1b926bef2209dcc}{\index{quantfdtd.\-c@{quantfdtd.\-c}!deallocate\-\_\-memory@{deallocate\-\_\-memory}}
+\index{deallocate\-\_\-memory@{deallocate\-\_\-memory}!quantfdtd.c@{quantfdtd.\-c}}
+\subsubsection[{deallocate\-\_\-memory}]{\setlength{\rightskip}{0pt plus 5cm}int deallocate\-\_\-memory (
+\begin{DoxyParamCaption}
+\item[{{\bf input\-\_\-data\-\_\-s} $\ast$}]{pars, }
+\item[{{\bf eigenfunction\-\_\-s} $\ast$}]{eigen, }
+\item[{double $\ast$$\ast$}]{prl, }
+\item[{double $\ast$$\ast$}]{pim, }
+\item[{double $\ast$$\ast$}]{V, }
+\item[{double $\ast$$\ast$}]{win2\-D}
+\end{DoxyParamCaption}
+)}}\label{quantfdtd_8c_ab355c0187bf7a23aa1b926bef2209dcc}
+Deallocate memory previously allocated by allocate function. \hypertarget{quantfdtd_8c_a3ebe420f3e851660eadf0e54497537f0}{\index{quantfdtd.\-c@{quantfdtd.\-c}!eigenfunction@{eigenfunction}}
+\index{eigenfunction@{eigenfunction}!quantfdtd.c@{quantfdtd.\-c}}
+\subsubsection[{eigenfunction}]{\setlength{\rightskip}{0pt plus 5cm}int eigenfunction (
+\begin{DoxyParamCaption}
+\item[{{\bf input\-\_\-data\-\_\-s} $\ast$}]{pars, }
+\item[{{\bf eigenfunction\-\_\-s} $\ast$}]{eigen}
+\end{DoxyParamCaption}
+)}}\label{quantfdtd_8c_a3ebe420f3e851660eadf0e54497537f0}
+Intialize the parameters like frequency, period -- for calculating eigenfunction of the Schrodinger equation. 
+\begin{DoxyParams}{Parameters}
+{\em \hyperlink{structinput__data__s}{input\-\_\-data\-\_\-s}} & $\ast$pars represents input data (eigenenergy, physical constants). \\
+\hline
+{\em \hyperlink{structeigenfunction__s}{eigenfunction\-\_\-s}} & $\ast$eigen eigenfunction parameters. \\
+\hline
+\end{DoxyParams}
+\hypertarget{quantfdtd_8c_a62596a94f181e391e80e0e82a81e0f00}{\index{quantfdtd.\-c@{quantfdtd.\-c}!find\-\_\-eigenfunction@{find\-\_\-eigenfunction}}
+\index{find\-\_\-eigenfunction@{find\-\_\-eigenfunction}!quantfdtd.c@{quantfdtd.\-c}}
+\subsubsection[{find\-\_\-eigenfunction}]{\setlength{\rightskip}{0pt plus 5cm}int find\-\_\-eigenfunction (
+\begin{DoxyParamCaption}
+\item[{int}]{N\-C, }
+\item[{int}]{M\-C, }
+\item[{{\bf input\-\_\-data\-\_\-s} $\ast$}]{pars, }
+\item[{{\bf eigenfunction\-\_\-s} $\ast$}]{eigen}
+\end{DoxyParamCaption}
+)}}\label{quantfdtd_8c_a62596a94f181e391e80e0e82a81e0f00}
+Finds eigenfunction of the problem.
+
+
+\begin{DoxyParams}{Parameters}
+{\em int} & N\-C x position of the source \\
+\hline
+{\em int} & M\-C y position of the source \\
+\hline
+{\em \hyperlink{structinput__data__s}{input\-\_\-data\-\_\-s}} & contains input data parameters (geometry) \\
+\hline
+{\em \hyperlink{structeigenfunction__s}{eigenfunction\-\_\-s}} & $\ast$eigen eigenfunction parameters \\
+\hline
+\end{DoxyParams}
+\hypertarget{quantfdtd_8c_a120e5edd058c9c03b3055edae673e83b}{\index{quantfdtd.\-c@{quantfdtd.\-c}!free\-\_\-cmatrix@{free\-\_\-cmatrix}}
+\index{free\-\_\-cmatrix@{free\-\_\-cmatrix}!quantfdtd.c@{quantfdtd.\-c}}
+\subsubsection[{free\-\_\-cmatrix}]{\setlength{\rightskip}{0pt plus 5cm}void free\-\_\-cmatrix (
+\begin{DoxyParamCaption}
+\item[{complex double $\ast$$\ast$}]{m, }
+\item[{int}]{size\-X, }
+\item[{int}]{size\-Y}
+\end{DoxyParamCaption}
+)}}\label{quantfdtd_8c_a120e5edd058c9c03b3055edae673e83b}
+Free previous memory allocated by {\ttfamily cmatrix}. 
+\begin{DoxyParams}{Parameters}
+{\em double} & $\ast$$\ast$m is matrix to be freed. \\
+\hline
+{\em int} & size\-X size of the matrix in X direction \\
+\hline
+{\em int} & size\-Y size of the matrix in Y direction \\
+\hline
+\end{DoxyParams}
+\hypertarget{quantfdtd_8c_aed80427379503bf798b13465db99095c}{\index{quantfdtd.\-c@{quantfdtd.\-c}!free\-\_\-matrix@{free\-\_\-matrix}}
+\index{free\-\_\-matrix@{free\-\_\-matrix}!quantfdtd.c@{quantfdtd.\-c}}
+\subsubsection[{free\-\_\-matrix}]{\setlength{\rightskip}{0pt plus 5cm}void free\-\_\-matrix (
+\begin{DoxyParamCaption}
+\item[{double $\ast$$\ast$}]{m, }
+\item[{int}]{size\-X, }
+\item[{int}]{size\-Y}
+\end{DoxyParamCaption}
+)}}\label{quantfdtd_8c_aed80427379503bf798b13465db99095c}
+Free previous memory allocated by {\ttfamily matrix}. 
+\begin{DoxyParams}{Parameters}
+{\em double} & $\ast$$\ast$m is matrix to be freed. \\
+\hline
+{\em int} & size\-X size of the matrix in X direction \\
+\hline
+{\em int} & size\-Y size of the matrix in Y direction \\
+\hline
+\end{DoxyParams}
+\hypertarget{quantfdtd_8c_a4d369e283be53a261d460fd185b0cc5c}{\index{quantfdtd.\-c@{quantfdtd.\-c}!matrix@{matrix}}
+\index{matrix@{matrix}!quantfdtd.c@{quantfdtd.\-c}}
+\subsubsection[{matrix}]{\setlength{\rightskip}{0pt plus 5cm}double$\ast$$\ast$ matrix (
+\begin{DoxyParamCaption}
+\item[{int}]{size\-X, }
+\item[{int}]{size\-Y}
+\end{DoxyParamCaption}
+)}}\label{quantfdtd_8c_a4d369e283be53a261d460fd185b0cc5c}
+Allocate memory for the matrix 2d array. 
+\begin{DoxyParams}{Parameters}
+{\em int} & size\-X size of the matrix in x \\
+\hline
+{\em int} & size\-Y size of the matrix in y \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+returns allocate memory 
+\end{DoxyReturn}
+\hypertarget{quantfdtd_8c_a0b47b404a5e0160bc54ca8d3af0393e1}{\index{quantfdtd.\-c@{quantfdtd.\-c}!normalization@{normalization}}
+\index{normalization@{normalization}!quantfdtd.c@{quantfdtd.\-c}}
+\subsubsection[{normalization}]{\setlength{\rightskip}{0pt plus 5cm}double normalization (
+\begin{DoxyParamCaption}
+\item[{int}]{N, }
+\item[{int}]{M, }
+\item[{double $\ast$$\ast$}]{prl, }
+\item[{double $\ast$$\ast$}]{pim}
+\end{DoxyParamCaption}
+)}}\label{quantfdtd_8c_a0b47b404a5e0160bc54ca8d3af0393e1}
+Do normalization of the real and imaginary part of the wavefunction.
+
+
+\begin{DoxyParams}{Parameters}
+{\em N} & number of discrete cells in X direction. \\
+\hline
+{\em M} & number of discrete cells in Y direction. \\
+\hline
+{\em double} & $\ast$$\ast$prl real part of the wavefunction. \\
+\hline
+{\em double} & $\ast$$\ast$pim imaginary part of the wavefunction.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Normalized real and imaginary parts of the wavefunction. 
+\end{DoxyReturn}
+\hypertarget{quantfdtd_8c_a9f2e54ee23d475e54ad684881e521190}{\index{quantfdtd.\-c@{quantfdtd.\-c}!plot\-\_\-data@{plot\-\_\-data}}
+\index{plot\-\_\-data@{plot\-\_\-data}!quantfdtd.c@{quantfdtd.\-c}}
+\subsubsection[{plot\-\_\-data}]{\setlength{\rightskip}{0pt plus 5cm}int plot\-\_\-data (
+\begin{DoxyParamCaption}
+\item[{F\-I\-L\-E $\ast$}]{output, }
+\item[{int}]{N, }
+\item[{int}]{M, }
+\item[{double $\ast$}]{x, }
+\item[{double $\ast$}]{y, }
+\item[{double $\ast$$\ast$}]{prl, }
+\item[{double $\ast$$\ast$}]{pim, }
+\item[{double $\ast$$\ast$}]{V}
+\end{DoxyParamCaption}
+)}}\label{quantfdtd_8c_a9f2e54ee23d475e54ad684881e521190}
+This function writes results to a file used by gnuplot to plot the data.
+
+
+\begin{DoxyParams}{Parameters}
+{\em output} & file descriptor if set {\ttfamily N\-U\-L\-L} then write to the stdout. \\
+\hline
+{\em N} & number of cells in x direc. \\
+\hline
+{\em M} & number of cells in y direc. \\
+\hline
+{\em $\ast$x} & coordinates to write out in x direc. \\
+\hline
+{\em $\ast$y} & coordinates to write out in y direc. \\
+\hline
+{\em $\ast$$\ast$prl} & real part of the wavefunction or eigenfunction. \\
+\hline
+{\em $\ast$$\ast$pim} & imag part of the wavefunction or eigenfunction. \\
+\hline
+{\em $\ast$$\ast$\-V} & potential used for calculation. \\
+\hline
+\end{DoxyParams}
+\hypertarget{quantfdtd_8c_a35de3726f53c82f16abbc874574ea88d}{\index{quantfdtd.\-c@{quantfdtd.\-c}!pot\-\_\-corral@{pot\-\_\-corral}}
+\index{pot\-\_\-corral@{pot\-\_\-corral}!quantfdtd.c@{quantfdtd.\-c}}
+\subsubsection[{pot\-\_\-corral}]{\setlength{\rightskip}{0pt plus 5cm}void pot\-\_\-corral (
+\begin{DoxyParamCaption}
+\item[{double $\ast$$\ast$}]{V, }
+\item[{int}]{N, }
+\item[{int}]{M, }
+\item[{int}]{N\-C, }
+\item[{int}]{M\-C, }
+\item[{double}]{radius, }
+\item[{double}]{V0, }
+\item[{double}]{D\-X}
+\end{DoxyParamCaption}
+)}}\label{quantfdtd_8c_a35de3726f53c82f16abbc874574ea88d}
+Potential for the quantum corral as presented by Cromie et. al Science, 282, 181, (1993) \hypertarget{quantfdtd_8c_ab6d9936b7eabd54846efd73e9fd1b1bb}{\index{quantfdtd.\-c@{quantfdtd.\-c}!pot\-\_\-free@{pot\-\_\-free}}
+\index{pot\-\_\-free@{pot\-\_\-free}!quantfdtd.c@{quantfdtd.\-c}}
+\subsubsection[{pot\-\_\-free}]{\setlength{\rightskip}{0pt plus 5cm}void pot\-\_\-free (
+\begin{DoxyParamCaption}
+\item[{double $\ast$$\ast$}]{V, }
+\item[{int}]{N, }
+\item[{int}]{M}
+\end{DoxyParamCaption}
+)}}\label{quantfdtd_8c_ab6d9936b7eabd54846efd73e9fd1b1bb}
+Potential of the free particle \hypertarget{quantfdtd_8c_aaaa1b4c4347dd0ab1100511f998567e2}{\index{quantfdtd.\-c@{quantfdtd.\-c}!pot\-\_\-harmonic@{pot\-\_\-harmonic}}
+\index{pot\-\_\-harmonic@{pot\-\_\-harmonic}!quantfdtd.c@{quantfdtd.\-c}}
+\subsubsection[{pot\-\_\-harmonic}]{\setlength{\rightskip}{0pt plus 5cm}void pot\-\_\-harmonic (
+\begin{DoxyParamCaption}
+\item[{double $\ast$$\ast$}]{V, }
+\item[{int}]{N, }
+\item[{int}]{M, }
+\item[{int}]{N\-C, }
+\item[{int}]{M\-C, }
+\item[{double}]{k0, }
+\item[{double}]{del\-X2}
+\end{DoxyParamCaption}
+)}}\label{quantfdtd_8c_aaaa1b4c4347dd0ab1100511f998567e2}
+Potential of the harmonic oscillator \hypertarget{quantfdtd_8c_a7ee51cf2e4dfa8e6f8cec73dc0b5a665}{\index{quantfdtd.\-c@{quantfdtd.\-c}!readinput@{readinput}}
+\index{readinput@{readinput}!quantfdtd.c@{quantfdtd.\-c}}
+\subsubsection[{readinput}]{\setlength{\rightskip}{0pt plus 5cm}int readinput (
+\begin{DoxyParamCaption}
+\item[{{\bf input\-\_\-data\-\_\-s} $\ast$}]{inppar, }
+\item[{F\-I\-L\-E $\ast$}]{input}
+\end{DoxyParamCaption}
+)}}\label{quantfdtd_8c_a7ee51cf2e4dfa8e6f8cec73dc0b5a665}
+Reads input from the file descriptor.
+
+
+\begin{DoxyParams}{Parameters}
+{\em input\-\_\-parameters\-\_\-s} & represents input parameters to read. \\
+\hline
+{\em input} & if this set to {\ttfamily N\-U\-L\-L}, read from the stdin. \\
+\hline
+\end{DoxyParams}
+\hypertarget{quantfdtd_8c_a5cb9dea6e6839ee3b960762cefd05e89}{\index{quantfdtd.\-c@{quantfdtd.\-c}!take\-\_\-fft@{take\-\_\-fft}}
+\index{take\-\_\-fft@{take\-\_\-fft}!quantfdtd.c@{quantfdtd.\-c}}
+\subsubsection[{take\-\_\-fft}]{\setlength{\rightskip}{0pt plus 5cm}int take\-\_\-fft (
+\begin{DoxyParamCaption}
+\item[{{\bf fft\-\_\-parameters\-\_\-s} $\ast$}]{pars, }
+\item[{int}]{n\-\_\-step}
+\end{DoxyParamCaption}
+)}}\label{quantfdtd_8c_a5cb9dea6e6839ee3b960762cefd05e89}
+F\-F\-T routine take discrete fft from time-\/domain data which are recorded on the particular point in space-\/domain. 
+\begin{DoxyParams}{Parameters}
+{\em fft\-\_\-parameters} & contains all parameters for F\-F\-T. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+F\-F\-T transform in fft\-\_\-parameters.\-P\-F array. 
+\end{DoxyReturn}
+\hypertarget{quantfdtd_8c_a2fbc6dbffab61d426ccf70c3760cfee1}{\index{quantfdtd.\-c@{quantfdtd.\-c}!test\-\_\-function@{test\-\_\-function}}
+\index{test\-\_\-function@{test\-\_\-function}!quantfdtd.c@{quantfdtd.\-c}}
+\subsubsection[{test\-\_\-function}]{\setlength{\rightskip}{0pt plus 5cm}int test\-\_\-function (
+\begin{DoxyParamCaption}
+\item[{int}]{N, }
+\item[{int}]{M, }
+\item[{int}]{N\-C, }
+\item[{int}]{M\-C, }
+\item[{double $\ast$$\ast$}]{win2\-D, }
+\item[{double $\ast$$\ast$}]{prl}
+\end{DoxyParamCaption}
+)}}\label{quantfdtd_8c_a2fbc6dbffab61d426ccf70c3760cfee1}
+This function represents the test function which is used to find eigenenergies and eigenfunctions of the Q\-D.
+
+
+\begin{DoxyParams}{Parameters}
+{\em N} & number of discrete cells in X direction. \\
+\hline
+{\em M} & number of discrete cells in Y direction. \\
+\hline
+{\em win2\-D} & Hanning window used to smooth the F\-F\-T results. \\
+\hline
+{\em double} & $\ast$$\ast$ prl real part of the wavefunction.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Initialize and returns real wavefunction. 
+\end{DoxyReturn}

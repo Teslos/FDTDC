@@ -9,12 +9,12 @@ HEADERS	=
 
 # Optionen fuer Debugger
 HOME = /cluster/home/matl/ivast
-CFLAGS 		=	-g -c -I/opt/local/include
+#CFLAGS 		=	-g -c -I/opt/local/include
 # Optionen fuer INDIGO1
 # FLAGS		=	-O2 -mips2 -c 
 # FLAGS		=	-c -Aa +O4
 # FLAGS		=	-inline  -O2 -mips4 -c -WK,-o=5,-so=3,-r=3 -woff all
-#CFLAGS           = -c -O2  
+CFLAGS           = -c -O3 -I/opt/local/include 
 
 LIB 		=  -L/Users/toniivas/Documents/Sources/fftw-3.3/.libs -lc -lm -lfftw3
 

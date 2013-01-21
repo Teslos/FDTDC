@@ -53,15 +53,15 @@ typedef struct{
 	double **phi0_rl;
 }eigenfunction_s;
 	   
-#define  Ntime  (2<<18)        // Size of the FFT buffer  
+#define  Ntime  (2<<20)        // Size of the FFT buffer  
 
 typedef struct {
-   complex double Ptime[Ntime];          // wavefunction saved at particular point    
-   complex double Pwin[Ntime];           // wavefunction corrected by Hanning
-   double win[Ntime];                    // Size of Hanning window
-   complex double PF[Ntime];             // FFT transform of the wavefunction
-   double FF[Ntime]; 
-   double PS[Ntime];
+   complex double *Ptime;          // wavefunction saved at particular point    
+   complex double *Pwin;           // wavefunction corrected by Hanning
+   double *win;                    // Size of Hanning window
+   complex double *PF;             // FFT transform of the wavefunction
+   double *FF; 
+   double *PS;
    double del_F;               // delta in Fourier space
    double del_E;               // delta in Energy
    double delT;                // Delta time scaled

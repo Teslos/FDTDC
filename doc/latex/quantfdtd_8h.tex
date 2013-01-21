@@ -1,0 +1,62 @@
+\hypertarget{quantfdtd_8h}{\section{quantfdtd.\-h File Reference}
+\label{quantfdtd_8h}\index{quantfdtd.\-h@{quantfdtd.\-h}}
+}
+{\ttfamily \#include $<$stdio.\-h$>$}\\*
+{\ttfamily \#include $<$stdlib.\-h$>$}\\*
+{\ttfamily \#include $<$complex.\-h$>$}\\*
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structinput__data__s}{input\-\_\-data\-\_\-s}
+\item 
+struct \hyperlink{structeigenfunction__s}{eigenfunction\-\_\-s}
+\item 
+struct \hyperlink{structfft__parameters__s}{fft\-\_\-parameters\-\_\-s}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define {\bfseries Stopif}(assertion, error\-\_\-action,...)
+\item 
+\hypertarget{quantfdtd_8h_abdc2969c6f56465a2949aa60696ceb34}{\#define {\bfseries Ntime}~(2$<$$<$18)}\label{quantfdtd_8h_abdc2969c6f56465a2949aa60696ceb34}
+
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{quantfdtd_8h_a56daf180eb5b9b3a00c391782faf9d15}{char {\bfseries error\-\_\-mode}}\label{quantfdtd_8h_a56daf180eb5b9b3a00c391782faf9d15}
+
+\item 
+\hypertarget{quantfdtd_8h_a0942b9a4f7a184e9d6b95901e2b9ba4f}{F\-I\-L\-E $\ast$ {\bfseries error\-\_\-log}}\label{quantfdtd_8h_a0942b9a4f7a184e9d6b95901e2b9ba4f}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+
+\begin{DoxyItemize}
+\item contains all constants and definitions of data structures for the quantfdtd program. \begin{DoxyVerb} Author: T.Ivas
+ Date  : 08.02.13\end{DoxyVerb}
+
+\end{DoxyItemize}
+
+\subsection{Macro Definition Documentation}
+\hypertarget{quantfdtd_8h_a96a07cd81fac6d79184eaf8e9b1768ef}{\index{quantfdtd.\-h@{quantfdtd.\-h}!Stopif@{Stopif}}
+\index{Stopif@{Stopif}!quantfdtd.h@{quantfdtd.\-h}}
+\subsubsection[{Stopif}]{\setlength{\rightskip}{0pt plus 5cm}\#define Stopif(
+\begin{DoxyParamCaption}
+\item[{}]{assertion, }
+\item[{}]{error\-\_\-action, }
+\item[{}]{...}
+\end{DoxyParamCaption}
+)}}\label{quantfdtd_8h_a96a07cd81fac6d79184eaf8e9b1768ef}
+{\bfseries Value\-:}
+\begin{DoxyCode}
+\textcolor{keywordflow}{if} (assertion)\{                                            \(\backslash\)
+                   fprintf(error\_log ? error\_log : stderr, \_\_VA\_ARGS\_\_);  \(\backslash\)
+                           fprintf(error\_log? error\_log: stderr, \textcolor{stringliteral}{"\(\backslash\)n"});       \(\backslash\)
+                                   if (error\_mode==\textcolor{charliteral}{'s'}) abort();               
+         \(\backslash\)
+                       else \{error\_action;\}                           \(\backslash\)
+           \}
+\end{DoxyCode}
