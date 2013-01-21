@@ -17,3 +17,17 @@
 *.app
 # Directories to ignore
 tests/
+
+test_win
+
+test_phi1_m
+
+quanttest
+
+quantfdtd
+
+test_fft
+
+test_fft
+
+timedomain
