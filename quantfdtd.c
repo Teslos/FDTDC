@@ -6,13 +6,15 @@
 	Date  : 08.02.13
 */
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
 #include <stdlib.h>
 #include <complex.h>
 #include <fftw3.h>
 #include <assert.h>
 #include "quantfdtd.h"
-
+int **imatrix(int, int);
+void free_imatrix(int **,int,int);
 /**
   Potential of the free particle
   */		
@@ -77,7 +79,7 @@ int pnpoly(int nvert, float *vertx, float *verty, float testx, float testy) {
 void pot_hexagon(double **V, int N, int M, int NC, int MC, double radius, double V0, double *XX){
 	//float vertx[] ={4.615,13.845,18.46,13.845,4.615,0.1};
 	//float verty[] ={0.1,0.1,8.0,16.0,16.0,8.0};
-	float r = 8;
+	float r = radius;
 	float vertx[6], verty[6];
 	for (int i = 0; i < 6; i++) {
 		vertx[i] = r*cos(2*M_PI * i / 6.0) + XX[NC];
@@ -97,6 +99,128 @@ void pot_hexagon(double **V, int N, int M, int NC, int MC, double radius, double
 	 }	
 }
 
+/**
+ Potential which simulates honeycomb network, contains 7 hexagon units arange
+ in honeycomb structure.
+ 
+ 
+ */
+void pot_honeycomb(double **V, int N, int M, int NC, int MC, double radius, double t, double V0, double *XX) {
+	int **flag;
+	flag = (int**)malloc(sizeof(int*)*M);
+	flag[0] = (int*)malloc(sizeof(int)*N*M);
+	if (flag == NULL)
+		fprintf(stderr, "Problem with allocation of memory for flag array\n");
+	if (flag[0] == NULL)
+		fprintf(stderr, "Can't allocate enough memory for flag array\n");
+	for (int i=1; i < M; i++) flag[i] = flag[i-1]+N;
+
+	// create honeycomb structure
+	float comb_distance = 2*radius*cos(M_PI / 6.0) + t;
+	// calculate six distances from the central hexagon
+	float comb_vertx[7], comb_verty[7];
+	// starting point in the center of the domain
+	comb_vertx[0] = XX[NC];
+	comb_verty[0] = XX[MC];
+	for (int i = 1; i < 7; i++) {
+		comb_vertx[i] = comb_distance*cos(2 * M_PI * i / 6.0)+comb_vertx[0];
+		comb_verty[i] = comb_distance*sin(2 * M_PI * i / 6.0)+comb_verty[0];
+	}
+	// first flag all cells which have non-zero potential
+	// we use the same procedure as in the hexagon case
+	// but add additional comb cells around.
+	for (int k = 0; k < 7; k++) {
+		float r = radius;
+		float vertx[6], verty[6];
+		for (int i = 0; i < 6; i++) {
+			vertx[i] = r*cos(2*M_PI * i / 6.0+M_PI/6.0) + comb_vertx[k];
+			verty[i] = r*sin(2*M_PI * i / 6.0+M_PI/6.0) + comb_verty[k];
+		} 
+
+		float testx, testy;
+		int nvert = 6;
+		for (int i = 0; i < M; i++){
+			testy = XX[i];
+			for (int j = 0; j < N; j++){
+				testx = XX[j];
+				if (pnpoly(nvert,vertx,verty,testx,testy)){
+					flag[i][j] = 1;
+				}
+			}
+		}	
+	}
+	
+	// go finally over the complete space and set potential
+	// for flagged cells.
+	for (int i = 0; i < M; i++){
+		for (int j = 0; j < N; j++){
+			if (!flag[i][j])
+				V[i][j] = V0*1.6e-19;
+		}
+	} 
+	// free memory
+	free(flag[0]);
+	free(flag);
+}
+/**
+ Reads potential from the 8-bit based image in PGM format. 
+ \param double **V - potential to set 
+ \param int N - number of discrete cells in X-direction
+ \param int M - number of discrete cells in Y-direction
+ \param char *filename - contains file name of the PGM image to read.
+ \return The potential V set by the pixels of the image.
+ */
+void pot_image(double **V, int N, int M, char *filename){
+    int numcols, numrows;
+    int maxgrey;
+    
+    char *buffer = NULL;
+    size_t len = 0;
+    int **array;
+    // open file for reading
+    FILE *fp = fopen(filename,"rb");
+    if (fp == NULL)
+        fprintf(stderr, " Problem with opening file: %s\n", filename);
+    // read the magic number
+    getline(&buffer, &len, fp);
+    if (strncmp(buffer,"P5",2) != 0) 
+        fprintf(stderr, " The image %s is not in PGM format\n", filename);
+    // read comment line
+    getline(&buffer, &len, fp);
+    printf("#Comment:%s \n", buffer);
+    
+    // read the size of image
+    fscanf(fp,"%i %i", &numcols, &numrows);
+    printf("#Num cols: %i, num rows: %i\n", numcols, numrows);
+    
+    fscanf(fp,"%i", &maxgrey);
+    printf("#Max grey level: %i\n", maxgrey);
+
+    // allocate memory for image
+    array = imatrix(numrows, numcols);
+    // read the data in 
+    for (int row = 0; row < numrows; ++row){
+        for (int col = 0; col < numcols; ++col){
+            array[row][col] = (int) fgetc(fp);
+        }
+    }
+
+    if ((N % numrows != 0) || (M % numcols != 0)) {
+        fprintf(stderr, "Size of the domain (%i,%i) is not multiple image size (%i,%i)\n"
+            "Please change the cells number to be multiple of image size:\n"
+            " example 70x70 image size; 140x140 size of the domain\n", N,M, numrows,numcols);
+        exit(0);
+    }
+    // finally set the potential array with the pixel values from the
+    // image. Maximum grey component corresponds to potential value V0.
+    for (int i = 0; i < N; ++i){
+        for (int j = 0; j < M; ++j){
+            V[i][j] = array[i][j]/((float)maxgrey)*1.6e-19*2.16;  // this is workround
+        }
+    }
+    free(buffer);
+    free_imatrix(array,numcols,numrows);
+} 
 
 /**
 Reads input from the file descriptor.
@@ -143,19 +267,19 @@ find eigenenergies and eigenfunctions of the QD.
 
 int test_function( int N, int M, int NC, int MC, double **win2D, double **prl ) {
 	double dist,dist1,dist2;
-	double sigma = 6.0;
+	double sigma = 2.0;
 	for(int i = 0; i < N; i++){
 		for(int j = 0; j < M; j++){
 			win2D[i][j] = 0.25 * (1. - cos(2*M_PI*i/N)) * (1. - cos(2*M_PI*j/M));
 			
 			// Single point
 			dist = sqrt((NC-i)*(NC-i) + (MC-j)*(MC-j));
-			//prl[i][j]  = win2D[i][j] * exp(-(dist/sigma)*(dist/sigma));
+			prl[i][j]  = win2D[i][j] * exp(-(dist/sigma)*(dist/sigma));
 			
 			// Double point
 			dist1 = sqrt( (MC-j)*(MC-j) + (NC-10-i)*(NC-10-i) );
 			dist2 = sqrt( (MC-j)*(MC-j) + (NC+10-i)*(NC+10-i) );
-			prl[i][j] = /*win2D[i][j]*/( exp(-(dist1/sigma)*(dist1/sigma))-exp(-(dist2/sigma)*(dist2/sigma)));								
+			//prl[i][j] = /*win2D[i][j]*/( exp(-(dist1/sigma)*(dist1/sigma))-exp(-(dist2/sigma)*(dist2/sigma)));								
 		}
 	}
 	return 0;
@@ -373,7 +497,12 @@ int plot_data(FILE *output, int N, int M, double *x, double *y, double **prl, do
 	}
 	return 0;
 }
-
+/**
+ Save FFT data to be ploted by gnuplot.
+ \param FILE *output - file handle of the output file
+ \param fft_parameters_s *fft_pars - results of fft analysis
+ \param int n_step - number of the stime steps to save (display)
+ */
 int plot_fft(FILE *output, fft_parameters_s *fft_pars, int n_step) {
 	FILE *fd = output ? output : stdout;
 	double nnorm = 1./sqrt(Ntime);
@@ -407,6 +536,26 @@ double **matrix(int sizeX, int sizeY){
 	return m;
 }
 /**
+ Allocate memory for the matrix 2d array of ints.
+ \param int sizeX size of the matrix in x 
+ \param int sizeY size of the matrix in y
+ \return returns allocate memory
+ */
+int **imatrix(int sizeX, int sizeY){
+	int **m;
+	printf("#Allocating matrix of size: (%i,%i)\n", sizeX, sizeY);
+	m = (int **)malloc(sizeof(int*)*sizeY);
+	m[0] = (int*)malloc(sizeof(int)*sizeY*sizeX);
+	if (m == NULL) 
+		fprintf(stderr, "Problem with allocation of memory for matrix\n");
+	if (m[0] == NULL)
+		fprintf(stderr, "Can't allocate enough memory for matrix\n");
+	for (int i = 1; i < sizeY; i++) m[i] = m[i-1]+sizeX; 
+	
+	return m;
+}
+
+/**
  Allocate memory for the matrix 2d array of complex numbers.
  \param int sizeX size of the matrix in x 
  \param int sizeY size of the matrix in y
@@ -435,6 +584,17 @@ void free_matrix(double **m, int sizeX, int sizeY){
 	free(m[0]);
 	free(m);
 }	
+
+/**
+ Free previous memory allocated by \c imatrix.
+ \param double **m is matrix to be freed.
+ \param int sizeX size of the matrix in X direction 
+ \param int sizeY size of the matrix in Y direction
+ */
+void free_imatrix(int **m, int sizeX, int sizeY){
+	free(m[0]);
+	free(m);
+}	
 /**
  Free previous memory allocated by \c cmatrix.
  \param double **m is matrix to be freed.
@@ -445,7 +605,16 @@ void free_cmatrix(complex double **m, int sizeX, int sizeY){
 	free(m[0]);
 	free(m);
 }
-
+/**
+ Do allocation of the memory for the simulation.
+ \param input_data_s *pars  input para
+ \param fft_parameters_s *fft_pars
+ \param eigenfunction_s *eigen - contains data and parameters for the eigenfunction calculations 
+ \param double ***prl - 2D array representing real part of the wave function
+ \param double ***pim - 2D array representing imaginary part of the wave function
+ \param double ***V - 2D array representing arbitary potential for Schrodinger equation
+ \param double ***win2D - 2D array representing Hanning window 
+ */
 long int allocate_memory(input_data_s *pars, fft_parameters_s *fft_pars, eigenfunction_s *eigen, double ***prl, double ***pim, double ***V, double ***win2D){
 	pars->XX = (double *)malloc(sizeof(double)*pars->NN);
 	// allocating 2D arrays
@@ -616,8 +785,9 @@ int main(int argc, char **argv) {
 
 	fft_parameters_s fft_pars; /* FFT data and parameters */
 	eigenfunction_s  eigen;    /* eigenfunction parameters and data */
-	double k0=0, V0=0.6, radius=14.26/2;
-	double **prl = NULL, **pim = NULL, **V = NULL, **win2D = NULL;  /* real and imag part of the wavefunction, potential*/	
+	int MC, NC;                /* source point for the finding eigenfunction */
+    double k0=0, V0=0.8, radius=6.674/2.0, t= 0.7;
+    double **prl = NULL, **pim = NULL, **V = NULL, **win2D = NULL;  /* real and imag part of the wavefunction, potential*/	
 	FILE *file = NULL;
 	
 	// simple processing of command line
@@ -643,8 +813,9 @@ int main(int argc, char **argv) {
 	int M = inppars.MM;
 	int n_step = inppars.n_step;
 	printf("#n_steps: %i", inppars.n_step);
-	//printf("I got here\n");
-	
+	// XXXX this only test
+    NC = 30;
+    MC = 35;
 	// Specify the potentials
 	switch(inppars.potential) {
 		case 1:
@@ -665,12 +836,18 @@ int main(int argc, char **argv) {
 		case 6:
 		pot_hexagon(V, N, M, N/2, M/2, radius, V0, inppars.XX);
 		break;
+		case 7:
+		pot_honeycomb(V, N, M, N/2, M/2, radius, t, V0, inppars.XX);
+		break;
+        case 8:
+        pot_image(V, N, M, "zmat.pgm");
+        break;
 		default:
 		printf("Unrecognized potential type: %i\n",inppars.potential);
 		break;
 	}
 	// Test function
-	test_function( N, M, N/2, M/2, win2D, prl );
+	test_function( N, M, NC, MC, win2D, prl );
 	
 	// Normalize and check 
 	normalization( N, M, prl, pim );	
@@ -683,11 +860,11 @@ int main(int argc, char **argv) {
 	
 	// Check normalization
 	double normalize = check_normalization(N, M, prl, pim);
-	printf("Normalization constant after %i steps: %g\n", n_step, normalize);
+	printf("#Normalization constant after %i steps: %g\n", n_step, normalize);
 	
 	if (!isnan(inppars.Ein)) {
 		FILE *find_phi = fopen("Eigenfunction","w");
-		find_eigenfunction(N/2, M/2, &inppars, &eigen);
+		find_eigenfunction(NC, MC, &inppars, &eigen);
 		plot_data(find_phi, N, M, inppars.XX, inppars.XX, prl, pim, NULL);
 		fclose(find_phi);
 		plot_data(NULL, N, M, inppars.XX, inppars.XX, eigen.phi0_rl, NULL, NULL);	
@@ -695,7 +872,7 @@ int main(int argc, char **argv) {
 		// Plot the time domain data and FFT.
 		FILE *poten = fopen("Potential","w");
 		plot_data(NULL, N, M, inppars.XX, inppars.XX, prl, pim, NULL);
-		//plot_data(poten, N, M, inppars.XX, inppars.XX, NULL, NULL, V);
+		plot_data(poten, N, M, inppars.XX, inppars.XX, NULL, NULL, V);
 		fclose(poten);
 		// Create the Hanning window for the time-domain data
 		create_Hanning(&fft_pars, n_step);
