@@ -786,7 +786,7 @@ int main(int argc, char **argv) {
 	fft_parameters_s fft_pars; /* FFT data and parameters */
 	eigenfunction_s  eigen;    /* eigenfunction parameters and data */
 	int MC, NC;                /* source point for the finding eigenfunction */
-    double k0=0, V0=0.8, radius=6.674/2.0, t= 0.7;
+    double k0=0, V0=0.8, radius=13.8/2.0, t= 0.7;
     double **prl = NULL, **pim = NULL, **V = NULL, **win2D = NULL;  /* real and imag part of the wavefunction, potential*/	
 	FILE *file = NULL;
 	
@@ -814,8 +814,8 @@ int main(int argc, char **argv) {
 	int n_step = inppars.n_step;
 	printf("#n_steps: %i", inppars.n_step);
 	// XXXX this only test
-    NC = 30;
-    MC = 35;
+    NC = N/2;
+    MC = M/2;
 	// Specify the potentials
 	switch(inppars.potential) {
 		case 1:
@@ -840,7 +840,7 @@ int main(int argc, char **argv) {
 		pot_honeycomb(V, N, M, N/2, M/2, radius, t, V0, inppars.XX);
 		break;
         case 8:
-        pot_image(V, N, M, "zmat.pgm");
+        pot_image(V, N, M, "TV151.pgm");
         break;
 		default:
 		printf("Unrecognized potential type: %i\n",inppars.potential);
@@ -856,7 +856,7 @@ int main(int argc, char **argv) {
 		create_Hanning(&fft_pars, n_step);
 	
 	// Core of FDTD 
-	calculate_FDTD( N, M, N/2-10, M/2-10, &inppars, &fft_pars, &eigen, prl, pim, V, n_step );
+	calculate_FDTD( N, M, N/2, M/2, &inppars, &fft_pars, &eigen, prl, pim, V, n_step );
 	
 	// Check normalization
 	double normalize = check_normalization(N, M, prl, pim);
