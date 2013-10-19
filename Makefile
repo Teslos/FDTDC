@@ -16,7 +16,7 @@ HOME = /cluster/home/matl/ivast
 # FLAGS		=	-inline  -O2 -mips4 -c -WK,-o=5,-so=3,-r=3 -woff all
 CFLAGS           = -c -O3 -I/opt/local/include 
 
-LIB 		=  -L/Users/toniivas/Documents/Sources/fftw-3.3/.libs -lc -lm -lfftw3
+LIB 		=  -L/opt/local/lib -lc -lm -lfftw3
 
 $(RUNFILE) 	:	$(HEADERS) $(OBJ)
 	$(CC) $(OBJ) -o $(RUNFILE) $(LIB) 
