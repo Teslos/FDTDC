@@ -2,7 +2,7 @@
     This program calculates eigenenergies and eigenfunctions of the nanoscale
 	QD on the surface.
 	
-	Author: T.Ivas
+	Author: ∃teslos 
 	Date  : 08.02.13
 */
 #include <stdio.h>
