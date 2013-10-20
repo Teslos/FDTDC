@@ -222,6 +222,48 @@ void pot_image(double **V, int N, int M, char *filename){
     free_imatrix(array,numcols,numrows);
 } 
 
+/** 
+Reads the line until it finds keyword in the file.
+
+\param input is file input
+\param keyword to search in file 
+\param type 
+
+*/
+int readline(FILE *input, char *keyword, char type, void* parameter, char comment){
+	char line[512];
+	int val;
+	double fval;
+	char *result;
+	
+	while (fgets(line, 512, input) != NULL) {
+		if (strchr(line,comment) != NULL) continue; // it is comment
+		if ((strstr(line, keyword)) != NULL) {
+			printf("%s:", keyword);
+			result = strtok(line, "=");
+			if (result != NULL) {
+				result = strtok(NULL, "=");
+				if (type == 'I') {
+					val = atoi(result);
+					int *p = (int *) parameter;
+					*p = val;
+					printf("%i\n", val);
+				} else if (type == 'D') {
+					fval = atof(result);
+					double *pv = (double *)parameter;
+					*pv = fval;
+					printf("%e\n",fval);
+				} else
+					printf("Error: unknown type\n");
+			}
+			// you found the keyword rewind the file to begin
+			rewind(input);
+			break;
+		}
+	}
+	return 0;
+}
+
 /**
 Reads input from the file descriptor.
 
@@ -229,29 +271,24 @@ Reads input from the file descriptor.
 \param input if this set to \c NULL, read from the stdin.
 */
 int readinput(input_data_s *inppar, FILE *input){
+	
 	// Read input
 	FILE *inpd = input ? input : stdin;
 	
-	printf("# Number of cells in x direction (int)?:"); 
-	fscanf(inpd,"%i", &(inppar->NN));
-	printf("# Number of cells in y direction (int)?:");
-	fscanf(inpd,"%i", &(inppar->MM));
-	printf("# Size of the cell in x direction (double)?:");
-	fscanf(inpd,"%lf", &(inppar->del_x));
-	printf("# Conversion factor for size of the cell in nm (double)?:");
-	fscanf(inpd,"%lf", &(inppar->DX));
-	printf("# Time step duration (double)?:"); 
-	fscanf(inpd,"%lf", &(inppar->dt));
-	printf("# Effective mass of an electron (double)?:");
-	fscanf(inpd,"%lf", &(inppar->meff));
-	printf("# Potential (int)?:");
-	fscanf(inpd,"%i", &(inppar->potential));
-	printf("# Number of timesteps (int):?");
-	fscanf(inpd,"%i", &(inppar->n_step));
-	printf("# Eigenenergy (double):?");
-	fscanf(inpd,"%lf", &(inppar->Ein));
+	readline(inpd, "CELLSX", 'I', &(inppar->NN), '#');
+	readline(inpd, "CELLSY", 'I', &(inppar->MM), '#');
+	readline(inpd, "SIZEX", 'D', &(inppar->del_x), '#');
+	readline(inpd, "CONV", 'D', &(inppar->DX), '#');
+	readline(inpd, "TIMESTEP", 'D', &(inppar->dt), '#');
+	readline(inpd, "EMASS", 'D', &(inppar->meff), '#');
+	readline(inpd, "POTENTIAL", 'I', &(inppar->potential), '#');
+	readline(inpd, "NSTEPS", 'I', &(inppar->n_step), '#');	
+	readline(inpd, "EIGEN", 'D', &(inppar->Ein), '#');
+	
 	return 0;
 }
+
+
 
 /**
 This function represents the test function which is used to
@@ -618,6 +655,8 @@ void free_cmatrix(complex double **m, int sizeX, int sizeY){
 long int allocate_memory(input_data_s *pars, fft_parameters_s *fft_pars, eigenfunction_s *eigen, double ***prl, double ***pim, double ***V, double ***win2D){
 	pars->XX = (double *)malloc(sizeof(double)*pars->NN);
 	// allocating 2D arrays
+	//printf("NN: %i, MM: %i\n", pars->NN, pars->MM);
+	
 	*prl = matrix(pars->NN,pars->MM);
 	*pim = matrix(pars->NN,pars->MM);
 	*V   = matrix(pars->NN,pars->MM);
@@ -807,6 +846,7 @@ int main(int argc, char **argv) {
 	eigenfunction(&inppars,&eigen);
 	printf("#Mass of electron: %g\n",inppars.melec);
 	printf("#Critical timestep: %g\n", critical_dt(&inppars,V0*inppars.eV2J));
+	printf("#Timestep: %g\n",inppars.dt);
 	printf("#Timesteps: %i\n",inppars.n_step);
 	printf("#Eigenenergy: %g\n",inppars.Ein);
 	int N = inppars.NN;
