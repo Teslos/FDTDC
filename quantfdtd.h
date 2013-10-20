@@ -35,6 +35,8 @@ typedef struct {
    double ra;          // Stability criteria
    double DX;          // Delta X in real units          
    double *XX;         // Mesh of points in X direc.
+   int testx;          // Test cell X position
+   int testy;          // Test cell Y position
    int potential;      // potential to calculate.
    int n_step;         // Number of time steps.
    double Ein;         // Eigenenergy of the QD.

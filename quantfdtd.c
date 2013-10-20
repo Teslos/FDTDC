@@ -227,7 +227,9 @@ Reads the line until it finds keyword in the file.
 
 \param input is file input
 \param keyword to search in file 
-\param type 
+\param type of parameter
+\param parameter to read
+\param comment char that starts comment line 
 
 */
 int readline(FILE *input, char *keyword, char type, void* parameter, char comment){
@@ -237,7 +239,7 @@ int readline(FILE *input, char *keyword, char type, void* parameter, char commen
 	char *result;
 	
 	while (fgets(line, 512, input) != NULL) {
-		if (strchr(line,comment) != NULL) continue; // it is comment
+		if (strchr(line,comment) != NULL) continue; // it is comment, next line
 		if ((strstr(line, keyword)) != NULL) {
 			printf("%s:", keyword);
 			result = strtok(line, "=");
@@ -284,6 +286,8 @@ int readinput(input_data_s *inppar, FILE *input){
 	readline(inpd, "POTENTIAL", 'I', &(inppar->potential), '#');
 	readline(inpd, "NSTEPS", 'I', &(inppar->n_step), '#');	
 	readline(inpd, "EIGEN", 'D', &(inppar->Ein), '#');
+	readline(inpd, "TESTX", 'I', &(inppar->testx), '#');
+	readline(inpd, "TESTY", 'I', &(inppar->testy), '#');
 	
 	return 0;
 }
@@ -853,9 +857,9 @@ int main(int argc, char **argv) {
 	int M = inppars.MM;
 	int n_step = inppars.n_step;
 	printf("#n_steps: %i", inppars.n_step);
-	// XXXX this only test
-    NC = N/2;
-    MC = M/2;
+	// test point
+    NC = inppars.testx;
+    MC = inppars.testy;
 	// Specify the potentials
 	switch(inppars.potential) {
 		case 1:
