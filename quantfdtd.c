@@ -7,6 +7,7 @@
 */
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include <math.h>
 #include <stdlib.h>
 #include <complex.h>
@@ -177,6 +178,8 @@ void pot_image(double **V, int N, int M, char *filename){
     char *buffer = NULL;
     size_t len = 0;
     int **array;
+	
+	printf("Opening file %s \n",filename);
     // open file for reading
     FILE *fp = fopen(filename,"rb");
     if (fp == NULL)
@@ -222,6 +225,21 @@ void pot_image(double **V, int N, int M, char *filename){
     free_imatrix(array,numcols,numrows);
 } 
 
+/**
+Trim the spaces from string.
+\param str string to trim.
+*/
+char *trimspace(char *str)
+{
+	char *end;
+	// trim leading space
+	while(isspace(*str)) str++;
+	// trim trailing space
+	end = str + strlen(str)-1;
+	while(end > str && isspace(*end)) end--;
+	*(end + 1) = 0;
+	return str;
+}
 /** 
 Reads the line until it finds keyword in the file.
 
@@ -241,7 +259,7 @@ int readline(FILE *input, char *keyword, char type, void* parameter, char commen
 	while (fgets(line, 512, input) != NULL) {
 		if (strchr(line,comment) != NULL) continue; // it is comment, next line
 		if ((strstr(line, keyword)) != NULL) {
-			printf("%s:", keyword);
+			printf("#%s:", keyword);
 			result = strtok(line, "=");
 			if (result != NULL) {
 				result = strtok(NULL, "=");
@@ -255,14 +273,18 @@ int readline(FILE *input, char *keyword, char type, void* parameter, char commen
 					double *pv = (double *)parameter;
 					*pv = fval;
 					printf("%e\n",fval);
+				} else if (type == 'S') {
+					char *string = (char *)parameter;
+					strcpy(string, trimspace(result));
+					printf("%s\n", string);
 				} else
 					printf("Error: unknown type\n");
 			}
-			// you found the keyword rewind the file to begin
-			rewind(input);
 			break;
 		}
 	}
+	// did you found or not the keyword rewind the file to begin
+	rewind(input);
 	return 0;
 }
 
@@ -288,6 +310,8 @@ int readinput(input_data_s *inppar, FILE *input){
 	readline(inpd, "EIGEN", 'D', &(inppar->Ein), '#');
 	readline(inpd, "TESTX", 'I', &(inppar->testx), '#');
 	readline(inpd, "TESTY", 'I', &(inppar->testy), '#');
+	readline(inpd, "TESTP", 'I', &(inppar->testp), '#');
+	readline(inpd, "POTIMAGE", 'S', &(inppar->potimage), '#');
 	
 	return 0;
 }
@@ -300,27 +324,32 @@ find eigenenergies and eigenfunctions of the QD.
 
 \param N  number of discrete cells in X direction.
 \param M  number of discrete cells in Y direction.
+\param NC position of test point in X direction. 
+\param MC position of test point in Y direction.
+\param point do we test single or double point.	
 \param win2D Hanning window used to smooth the FFT results. 
 \param double ** prl real part of the wavefunction.
 
 \return Initialize and returns real wavefunction.
 */
 
-int test_function( int N, int M, int NC, int MC, double **win2D, double **prl ) {
+int test_function( int N, int M, int NC, int MC, int point, double **win2D, double **prl ) {
 	double dist,dist1,dist2;
 	double sigma = 2.0;
 	for(int i = 0; i < N; i++){
 		for(int j = 0; j < M; j++){
 			win2D[i][j] = 0.25 * (1. - cos(2*M_PI*i/N)) * (1. - cos(2*M_PI*j/M));
 			
-			// Single point
-			dist = sqrt((NC-i)*(NC-i) + (MC-j)*(MC-j));
-			prl[i][j]  = win2D[i][j] * exp(-(dist/sigma)*(dist/sigma));
-			
-			// Double point
-			dist1 = sqrt( (MC-j)*(MC-j) + (NC-10-i)*(NC-10-i) );
-			dist2 = sqrt( (MC-j)*(MC-j) + (NC+10-i)*(NC+10-i) );
-			//prl[i][j] = /*win2D[i][j]*/( exp(-(dist1/sigma)*(dist1/sigma))-exp(-(dist2/sigma)*(dist2/sigma)));								
+			if (point == 1) {
+				// Single point
+				dist = sqrt((NC-i)*(NC-i) + (MC-j)*(MC-j));
+				prl[i][j]  = win2D[i][j] * exp(-(dist/sigma)*(dist/sigma));
+			} else if (point == 2){
+				// Double point the positions of the.
+				dist1 = sqrt( (MC-j)*(MC-j) + (NC-10-i)*(NC-10-i) );
+				dist2 = sqrt( (MC-j)*(MC-j) + (NC+10-i)*(NC+10-i) );
+				prl[i][j] = /*win2D[i][j]*/( exp(-(dist1/sigma)*(dist1/sigma))-exp(-(dist2/sigma)*(dist2/sigma)));								
+			}
 		}
 	}
 	return 0;
@@ -824,8 +853,9 @@ int main(int argc, char **argv) {
 		.m0   = 9.1e-31,   /* mass of electron */
 		.hbar = 1.054e-34, /* Planck's constant */
 		.eV2J = 1.6e-19,   /* Energy conversion factors */
-		.J2eV = 1/1.6e-19};
-
+		.J2eV = 1/1.6e-19,
+		.testp = 1         /* default is single point */
+	}; 
 	fft_parameters_s fft_pars; /* FFT data and parameters */
 	eigenfunction_s  eigen;    /* eigenfunction parameters and data */
 	int MC, NC;                /* source point for the finding eigenfunction */
@@ -884,14 +914,15 @@ int main(int argc, char **argv) {
 		pot_honeycomb(V, N, M, N/2, M/2, radius, t, V0, inppars.XX);
 		break;
         case 8:
-        pot_image(V, N, M, "TV151.pgm");
+        pot_image(V, N, M, inppars.potimage);
         break;
 		default:
 		printf("Unrecognized potential type: %i\n",inppars.potential);
 		break;
 	}
+	int point = inppars.testp;
 	// Test function
-	test_function( N, M, NC, MC, win2D, prl );
+	test_function( N, M, NC, MC, point, win2D, prl );
 	
 	// Normalize and check 
 	normalization( N, M, prl, pim );	

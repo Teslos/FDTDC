@@ -1,7 +1,7 @@
 /** \file quantfdtd.h - contains all constants and definitions of data structures
    for the quantfdtd program.
    
-	Author: T.Ivas
+	Author: ∃teslos
 	Date  : 08.02.13
 */
 #include <stdio.h>
@@ -37,7 +37,9 @@ typedef struct {
    double *XX;         // Mesh of points in X direc.
    int testx;          // Test cell X position
    int testy;          // Test cell Y position
+   int testp;          // Single or double point test
    int potential;      // potential to calculate.
+   char potimage[255]; // potential image filename.
    int n_step;         // Number of time steps.
    double Ein;         // Eigenenergy of the QD.
    int Tspan;          // Window of time to calculate eigenfreq.
